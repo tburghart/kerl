@@ -21,6 +21,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+#
+# recognize Basho branches
+#
+if [ "$1" = 'build' -a "$2" != 'git' ] && echo "$2 $3" | grep -qi 'basho'
+then
+    cmd="$1"
+    shift
+    exec "$0" "$cmd" 'git' 'https://github.com/basho/otp' "$@"
+fi
+
 ERLANG_DOWNLOAD_URL=http://www.erlang.org/download
 
 KERL_BASE_DIR="$HOME/.kerl"
