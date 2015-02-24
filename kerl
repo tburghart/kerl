@@ -31,10 +31,14 @@ then
     exec "$0" "$cmd" 'git' 'https://github.com/basho/otp' "$@"
 fi
 
+#
+# Local paths
+#
+KERL_BASE_DIR='/opt/kerl'
+KERL_CONFIG="$KERL_BASE_DIR/.kerlrc"
+
 ERLANG_DOWNLOAD_URL=http://www.erlang.org/download
 
-KERL_BASE_DIR="$HOME/.kerl"
-KERL_CONFIG="$HOME/.kerlrc"
 KERL_DOWNLOAD_DIR="$KERL_BASE_DIR/archives"
 KERL_BUILD_DIR="$KERL_BASE_DIR/builds"
 KERL_GIT_DIR="$KERL_BASE_DIR/gits"
