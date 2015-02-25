@@ -346,6 +346,8 @@ do_build()
 {
     case "$KERL_SYSTEM" in
         Darwin)
+        # assume if the user set CC or CFLAGS that's what they want to use
+        if [ -z "$CC" -a -z "$CFLAGS" ]; then
             if [ `gcc --version 2>/dev/null | grep -i llvm | wc -l` = "1" ]; then
                 if lion_support $1; then
                     KERL_CONFIGURE_OPTIONS="CFLAGS=-O0 $KERL_CONFIGURE_OPTIONS"
@@ -357,6 +359,7 @@ do_build()
                     fi
                 fi
             fi
+        fi
         ;;
         *)
         ;;

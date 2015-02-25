@@ -1,0 +1,118 @@
+#
+# local kerl options
+#
+# this file gets sourced by activate, which is in turn sourced by the
+# interactive shell, so only put stuff you want in your working environment
+# above the 'kerl' test below
+#
+
+
+#
+# Anything beyond here only gets pulled in if the 'kerl' script is running
+#
+[ "${0##*/}" = 'kerl' ] || return
+
+KERL_DEFAULT_INSTALL_DIR='/opt/erlangs'
+
+
+#
+# below here only matters when building
+#
+[ "$1" = 'build' ] || return
+
+#
+# make sure there are no prior configure options, or the ones set here
+# will get wiped out
+#
+unset _KCO
+
+#
+# disable ODBC in kerl builds because odbcserver.[hc] uses a structure
+# containing a variable named 'bool' - not worth patching for what kerl
+# builds are being used for
+#
+KERL_CONFIGURE_OPTIONS='--enable-darwin-64bit --enable-smp-support'
+KERL_CONFIGURE_OPTIONS+=' --enable-hipe --enable-threads --enable-kernel-poll'
+KERL_CONFIGURE_OPTIONS+=' --with-cocoa --with-javac --with-ssl --without-odbc'
+
+CC='/usr/bin/cc'
+CXX='/usr/bin/c++'
+CFLAGS='-arch x86_64 -march=native -m64 -O3'
+#
+# set compiler options based on what we're building
+#
+otpver=''
+errfmt="Can't recognize an OTP release pattern in '%s'
+  - looks like a bug in ${KERL_CONFIG:-the Kerl RC file}\n"
+if [ "$2" = 'git' ]
+then
+    if [ $# -ge 5 ]
+    then
+        for cand in "$5" "$4"
+        do
+            case "$cand" in
+                [Rr][1-9][0-9]* )
+                    otpver="${cand:1:2}"
+                    break
+                    ;;
+                [1-9][0-9] | [1-9][0-9].* )
+                    otpver="${cand:0:2}"
+                    break
+                    ;;
+                [Oo][Tt][Pp]-[1-9][0-9] | [Oo][Tt][Pp]-[1-9][0-9].* )
+                    otpver="${cand:4:2}"
+                    break
+                    ;;
+                * )
+                    ;;
+            esac
+        done
+        unset cand
+        if [ -z "$otpver" ]
+        then
+            printf "$errfmt" "$4' or '$5" >&2
+            exit 1
+        fi
+    fi
+else
+    if [ $# -ge 2 ]
+    then
+        case "$2" in
+            [Rr][1-9][0-9]* )
+                otpver="${2:1:2}"
+                ;;
+            [1-9][0-9] | [1-9][0-9].* )
+                otpver="${2:0:2}"
+                ;;
+            * )
+                printf "$errfmt" "$2" >&2
+                exit 1
+                ;;
+        esac
+    fi
+fi
+case $otpver in
+    1[0-6] )
+        CFLAGS+=' -Wno-deprecated-declarations'
+        CFLAGS+=' -Wno-empty-body'
+        CFLAGS+=' -Wno-implicit-function-declaration'
+        CFLAGS+=' -Wno-parentheses-equality'
+        CFLAGS+=' -Wno-pointer-sign'
+        CFLAGS+=' -Wno-tentative-definition-incomplete-type'
+        CFLAGS+=' -Wno-unused-function'
+        CFLAGS+=' -Wno-unused-value'
+        CFLAGS+=' -Wno-unused-variable'
+        ;;
+    17 )
+        CFLAGS+=' -Wno-deprecated-declarations'
+        CFLAGS+=' -Wno-implicit-function-declaration'
+        CFLAGS+=' -Wno-pointer-sign'
+        CFLAGS+=' -Wno-tentative-definition-incomplete-type'
+        ;;
+    * )
+        ;;
+esac
+
+CXXFLAGS="$CFLAGS"
+LDFLAGS='-O4'
+export  CC CXX CFLAGS CXXFLAGS LDFLAGS
